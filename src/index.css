@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-dark: #0f172a; /* Slate 900 */
+    --bg-darker: #020617; /* Slate 950 */
+    --accent-teal: #14b8a6; /* Teal 500 */
+    --accent-purple: #8b5cf6; /* Violet 500 */
+    --accent-gold: #f59e0b; /* Amber 500 */
+    --text-primary: #f8fafc; /* Slate 50 */
+    --text-secondary: #94a3b8; /* Slate 400 */
+  }
+
+  body {
+    font-family: 'Inter', 'Poppins', sans-serif;
+    @apply bg-[var(--bg-dark)] text-[var(--text-primary)] antialiased overflow-x-hidden selection:bg-[var(--accent-teal)] selection:text-white;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-purple)];
+  }
+  .card-glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
