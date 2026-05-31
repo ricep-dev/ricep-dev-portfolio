@@ -1,4 +1,4 @@
-import HeroImage from "/assets/profile.jpg";
+import HeroImage from "/assets/Ricep.jpg";
 
 const Image = {
   HeroImage,
@@ -98,7 +98,7 @@ export const listTools = [
   },
 ];
 
-import Proyek1 from "/assets/proyek/proyek1.webp";
+import Proyek1 from "/assets/proyek/proyekrestaurant.jpg";
 import Proyek2 from "/assets/proyek/proyek2.webp";
 import Proyek3 from "/assets/proyek/proyek3.webp";
 import Proyek4 from "/assets/proyek/proyek4.webp";
@@ -109,15 +109,15 @@ export const listProyek = [
   {
     id: 1,
     gambar: Proyek1,
-    nama: "Website Sekolah",
-    desk: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis, laborum!",
-    tools: ["HTML", "CSS", "Javascript", "AOS"],
+    nama: "Restaurant Recommendation App",
+    desk: "Membangun aplikasi restaurant recommendation berbasis Flutter dan Golang dengan sistem Hybrid Filtering recommendation.",
+    tools: ["Flutter", "Reactjs", "Golang", "mysql", "Hybrid Filtering"],
     dad: "200",
   },
   {
     id: 2,
     gambar: Proyek2,
-    nama: "Company Profile",
+    nama: "Restaurant Website Admin",
     desk: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis, laborum!",
     tools: ["HTML", "CSS", "Javascript", "AOS", "Swiper", "Lightbox Gallery"],
     dad: "300",
