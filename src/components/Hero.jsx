@@ -31,7 +31,7 @@ const Hero = () => {
               View My Work
             </a>
             <a 
-              href="mailto:ricepardiansyah3@email.com" 
+              href="mailto:ricepardiansyah3@gmail.com" 
               className="px-8 py-3 rounded-full border border-white/20 hover:border-white/50 text-white font-semibold transition-all w-full sm:w-auto hover:bg-white/5"
             >
               Contact Me
