@@ -99,7 +99,7 @@ export const listTools = [
 ];
 
 import Proyek1 from "/assets/proyek/proyekrestaurant.jpg";
-import Proyek2 from "/assets/proyek/proyek2.webp";
+import Proyek2 from "/assets/proyek/AR Campus.png";
 import Proyek3 from "/assets/proyek/proyek3.webp";
 import Proyek4 from "/assets/proyek/proyek4.webp";
 import Proyek5 from "/assets/proyek/proyek5.webp";
@@ -117,9 +117,9 @@ export const listProyek = [
   {
     id: 2,
     gambar: Proyek2,
-    nama: "Restaurant Website Admin",
-    desk: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis, laborum!",
-    tools: ["HTML", "CSS", "Javascript", "AOS", "Swiper", "Lightbox Gallery"],
+    nama: "Smart Campus Navigation (UI/UX Design)",
+    desk: "Desain UI/UX aplikasi navigasi indoor berbasis mobile menggunakan Figma dengan konsep peta interaktif dan Augmented Reality (AR).",
+    tools: ["Figma", "UI/UX Design", "Wireframing", "Prototyping", "Design System"],
     dad: "300",
   },
   {

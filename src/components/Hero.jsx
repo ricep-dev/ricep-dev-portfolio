@@ -21,7 +21,7 @@ const Hero = () => {
           <p className="text-[var(--text-secondary)] text-lg max-w-2xl mx-auto lg:mx-0">
             A passionate developer focusing on React, Golang & Flutter. Interested in 
             AI Recommendation Systems & Backend Engineering.
-          </p>
+          </p>                                                                      
           
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
             <a 
