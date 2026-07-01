@@ -2,30 +2,242 @@
 
 @layer base {
   :root {
-    --bg-dark: #0f172a; /* Slate 900 */
-    --bg-darker: #020617; /* Slate 950 */
-    --accent-teal: #14b8a6; /* Teal 500 */
-    --accent-purple: #8b5cf6; /* Violet 500 */
-    --accent-gold: #f59e0b; /* Amber 500 */
-    --text-primary: #f8fafc; /* Slate 50 */
-    --text-secondary: #94a3b8; /* Slate 400 */
+    --bg-dark: #0f172a;
+    --bg-darker: #020617;
+    --accent-teal: #14b8a6;
+    --accent-purple: #8b5cf6;
+    --accent-gold: #f59e0b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
-    font-family: 'Inter', 'Poppins', sans-serif;
-    @apply bg-[var(--bg-dark)] text-[var(--text-primary)] antialiased overflow-x-hidden selection:bg-[var(--accent-teal)] selection:text-white;
+    font-family: "Inter", "Poppins", sans-serif;
+    color: var(--text-primary);
+    background:
+      radial-gradient(
+        circle at top left,
+        rgba(20, 184, 166, 0.12),
+        transparent 35%
+      ),
+      radial-gradient(
+        circle at bottom right,
+        rgba(139, 92, 246, 0.14),
+        transparent 35%
+      ),
+      linear-gradient(
+        180deg,
+        var(--bg-dark) 0%,
+        var(--bg-darker) 100%
+      );
+    @apply antialiased overflow-x-hidden selection:bg-[var(--accent-teal)] selection:text-white;
+    position: relative;
+  }
+
+  /* Background Grid */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 55px 55px;
+    mask-image: radial-gradient(circle at center, black 45%, transparent 95%);
+    -webkit-mask-image: radial-gradient(circle at center, black 45%, transparent 95%);
+  }
+
+  /* Glow Overlay — sekarang perlahan "bernafas" agar terasa hidup */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        circle at 15% 20%,
+        rgba(20, 184, 166, 0.08),
+        transparent 25%
+      ),
+      radial-gradient(
+        circle at 85% 75%,
+        rgba(139, 92, 246, 0.08),
+        transparent 30%
+      );
+    filter: blur(40px);
+    animation: glow-breathe 10s ease-in-out infinite;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg-darker);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--accent-teal), var(--accent-purple));
+    border-radius: 999px;
+    border: 2px solid var(--bg-darker);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--accent-purple), var(--accent-teal));
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-teal) var(--bg-darker);
   }
 }
 
 @layer utilities {
+  /* Gradient teks statis (tetap dipertahankan) */
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-purple)];
   }
+
+  /* Versi animasi — geser warnanya, cocok buat judul hero */
+  .text-gradient-animated {
+    @apply bg-clip-text text-transparent;
+    background: linear-gradient(
+      90deg,
+      var(--accent-teal),
+      var(--accent-purple),
+      var(--accent-gold),
+      var(--accent-teal)
+    );
+    background-size: 300% auto;
+    animation: gradient-shift 6s linear infinite;
+  }
+
+  /* Card glass dengan hover lift + border glow */
   .card-glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl;
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl;
+    transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  }
+  .card-glass:hover {
+    transform: translateY(-6px);
+    border-color: rgba(20, 184, 166, 0.4);
+    box-shadow:
+      0 20px 40px -15px rgba(20, 184, 166, 0.25),
+      0 10px 20px -10px rgba(139, 92, 246, 0.2);
+  }
+
+  /* Card dengan border gradient animasi — buat highlight project unggulan */
+  .card-glow-border {
+    @apply relative rounded-2xl bg-white/5 backdrop-blur-xl shadow-xl;
+    padding: 1px;
+  }
+  .card-glow-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: linear-gradient(
+      120deg,
+      var(--accent-teal),
+      var(--accent-purple),
+      var(--accent-gold)
+    );
+    background-size: 200% 200%;
+    animation: gradient-shift 5s linear infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .section-container {
+    @apply max-w-7xl mx-auto px-6 lg:px-8;
+  }
+
+  /* Badge kecil, cocok buat tag skill/teknologi */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-[var(--text-secondary)] backdrop-blur-md transition-colors;
+  }
+  .badge:hover {
+    @apply border-[var(--accent-teal)]/50 text-[var(--text-primary)];
+  }
+
+  /* Tombol utama dengan efek gradient hover */
+  .btn-primary {
+    @apply relative inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold text-white overflow-hidden transition-transform duration-300;
+    background: linear-gradient(90deg, var(--accent-teal), var(--accent-purple));
+    background-size: 200% auto;
+  }
+  .btn-primary:hover {
+    background-position: right center;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -8px rgba(20, 184, 166, 0.5);
+  }
+
+  /* Tombol outline / secondary */
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold border border-white/15 text-[var(--text-primary)] backdrop-blur-md transition-all duration-300;
+  }
+  .btn-outline:hover {
+    @apply border-[var(--accent-teal)] bg-[var(--accent-teal)]/10;
+  }
+
+  /* Divider halus dengan glow di tengah */
+  .divider-glow {
+    @apply relative h-px w-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.15),
+      transparent
+    );
+  }
+
+  /* Fade-in-up sederhana untuk elemen saat masuk viewport (kombinasikan dengan JS/IntersectionObserver) */
+  .fade-in-up {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: fade-in-up 0.7s ease forwards;
+  }
+
+  /* Efek mengambang lembut, bagus untuk ilustrasi/avatar */
+  .float-soft {
+    animation: float 5s ease-in-out infinite;
   }
 }
 
-html {
-  scroll-behavior: smooth;
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes glow-breathe {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
