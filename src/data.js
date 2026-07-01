@@ -9,8 +9,8 @@ export default Image;
 import Tools1 from "/assets/tools/vscode.png";
 import Tools2 from "/assets/tools/reactjs.png";
 import Tools3 from "/assets/tools/nextjs.png";
-import Tools4 from "/assets/tools/tailwind.png";
-import Tools5 from "/assets/tools/bootstrap.png";
+import Tools4 from "/assets/tools/Vue.png";
+import Tools5 from "/assets/tools/flutter.png";
 import Tools6 from "/assets/tools/js.png";
 import Tools7 from "/assets/tools/nodejs.png";
 import Tools8 from "/assets/tools/github.png";
@@ -43,14 +43,14 @@ export const listTools = [
   {
     id: 4,
     gambar: Tools4,
-    nama: "Tailwind CSS",
+    nama: "Vue.Js",
     ket: "Framework",
     dad: "400",
   },
   {
     id: 5,
     gambar: Tools5,
-    nama: "Bootstrap",
+    nama: "Flutter",
     ket: "Framework",
     dad: "500",
   },
