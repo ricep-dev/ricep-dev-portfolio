@@ -49,7 +49,7 @@ const Navbar = () => {
             {/* Logo */}
             <a
               href="#home"
-              className="text-2xl font-extrabold tracking-tight flex items-center gap-2"
+              className="text-2xl font-extrabold tracking-tight"
             >
               <span className="text-gradient">Ricep</span>
               <span className="text-white">.dev</span>
