@@ -7,6 +7,9 @@ const navItems = [
   { name: "Projects", href: "#projects" },
 ];
 
+const whatsappUrl =
+  "https://wa.me/6281563139212?text=Halo%20Ricep,%20saya%20tertarik%20dengan%20portfolio%20Anda.%20Saya%20ingin%20berdiskusi%20mengenai%20proyek%20website%20atau%20aplikasi.%20Terima%20kasih.";
+
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -32,7 +35,7 @@ const Navbar = () => {
         }`}
       >
         <div
-          className={`
+          className="
             rounded-full
             border border-white/10
             bg-white/5
@@ -42,10 +45,9 @@ const Navbar = () => {
             py-4
             transition-all
             duration-500
-          `}
+          "
         >
           <div className="flex items-center justify-between">
-
             {/* Logo */}
             <a
               href="#home"
@@ -57,7 +59,6 @@ const Navbar = () => {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-2">
-
               {navItems.map((item) => (
                 <a
                   key={item.name}
@@ -79,7 +80,9 @@ const Navbar = () => {
               ))}
 
               <a
-                href="#contact"
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="
                   ml-3
                   rounded-full
@@ -107,7 +110,7 @@ const Navbar = () => {
               className="md:hidden p-2 rounded-lg hover:bg-white/10 transition"
             >
               <svg
-                className="w-7 h-7"
+                className="w-7 h-7 text-white"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -128,7 +131,6 @@ const Navbar = () => {
                 )}
               </svg>
             </button>
-
           </div>
         </div>
 
@@ -147,9 +149,7 @@ const Navbar = () => {
           `}
         >
           <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-5">
-
             <div className="flex flex-col gap-2">
-
               {navItems.map((item) => (
                 <a
                   key={item.name}
@@ -170,7 +170,9 @@ const Navbar = () => {
               ))}
 
               <a
-                href="#contact"
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => setMobileOpen(false)}
                 className="
                   mt-3
@@ -189,7 +191,6 @@ const Navbar = () => {
               >
                 Contact Me
               </a>
-
             </div>
           </div>
         </div>
