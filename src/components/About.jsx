@@ -477,7 +477,7 @@ const About = () => {
             <div ref={statsRef} className="stats-grid">
               <StatCard
                 icon="📂"
-                value={10}
+                value={3}
                 label="Projects Built"
                 sub="Web & Mobile Applications"
                 accent="var(--accent-teal)"

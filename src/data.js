@@ -155,3 +155,109 @@ export const listProyek = [
     dad: "700",
   },
 ];
+
+
+// ================= CERTIFICATIONS =================
+
+import Certificate1 from "/assets/certifications/Data Enginer Ricep.jpg";
+import Certificate2 from "/assets/certifications/aplikasi dan usecase.jpg";
+import Certificate3 from "/assets/certifications/ml sertif.jpg";
+import Certificate4 from "/assets/certifications/Himatika1.jpg";
+import Certificate5 from "/assets/certifications/Himatika2.jpg";
+// import Certificate6 from "/assets/certifications/javascript.jpg";
+
+export const listCertifications = [
+{
+    id: 1,
+    gambar: Certificate1,
+    nama: "Data Engineer Professional Certification",
+    issuer: "RapidMiner (Altair)",
+    desk: "A professional certification from RapidMiner (Altair) validating solid experience in Data Engineering competencies, including: Data Access, Basic Transformations, Working with Multiple Data Sets, Pivot Tables, Routines, and Simple Text Processing.",
+    credential: "https://ti-user-certificates.s3.amazonaws.com/5733896a-1d71-46e5-b0a3-1ffcf845fe21/d26c65b2-8bc9-48ed-8295-dfc157ac5c1d-ricep-ardiansyah-d07ec8b0-a1a5-4e92-80c0-eee2e0582d55-certificate.pdf",
+    skills: [
+      "Data Engineering",
+      "Data Transformation",
+      "RapidMiner",
+    ],
+    dad: "100",
+  },
+
+  {
+    id: 2,
+    gambar: Certificate2, // Sesuaikan dengan variabel gambar kamu
+    nama: "Applications & Use Cases Professional Certification",
+    issuer: "RapidMiner (Altair)",
+    desk: "A professional certification from RapidMiner (Altair) validating core competency in applying data science, including: Introduction to Machine Learning, CRISP-DM methodology, Use Cases for Machine Learning, Visualization, and Model Management.",
+    credential: "https://ti-user-certificates.s3.amazonaws.com/5733896a-1d71-46e5-b0a3-1ffcf845fe21/d26c65b2-8bc9-48ed-8295-dfc157ac5c1d-ricep-ardiansyah-bf3e51a3-665e-4c18-9f7d-e4f417f1cb92-certificate.pdf",
+    skills: [
+      "Machine Learning",
+      "Data Science",
+      "CRISP-DM",
+      "Data Visualization"
+    ],
+    dad: "200",
+  },
+
+{
+    id: 3,
+    gambar: Certificate3, // Sesuaikan dengan nama variabel gambar kamu
+    nama: "Machine Learning Professional Certification",
+    issuer: "RapidMiner (Altair)",
+    desk: "A professional certification from RapidMiner (Altair) validating solid experience in core Machine Learning techniques, including: Classification, Regression, Scoring, Validation, Feature Importance, Clustering, and Association Rules.",
+    credential: "https://ti-user-certificates.s3.amazonaws.com/5733896a-1d71-46e5-b0a3-1ffcf845fe21/d26c65b2-8bc9-48ed-8295-dfc157ac5c1d-ricep-ardiansyah-1cd3c580-82ec-4574-a972-ea26f19f9596-certificate.pdf", // Silakan isi dengan URL kredensial sertifikat ketiga kamu jika ada
+    skills: [
+      "Machine Learning",
+      "Predictive Modeling",
+      "Data Clustering",
+      "Feature Engineering"
+    ],
+    dad: "300",
+  },
+
+{
+    id: 4,
+    gambar: Certificate4, // Sesuaikan dengan nama variabel gambar kamu
+    nama: "Certificate of Appreciation: Staff of Research and Technology",
+    issuer: "HIMATIKA Universitas Teknologi Yogyakarta",
+    desk: "Awarded for the active contribution and dedication as a Staff of Research and Technology (Ristek) within the Informatics Student Association (HIMATIKA) for the 2023/2024 period.",
+    credential: "", // Bisa dikosongkan jika tidak ada link sertifikat online
+    skills: [
+      "Research & Development",
+      "Teamwork",
+      "Organizational Skills",
+      "Public Relations"
+    ],
+    dad: "400",
+  },
+
+{
+    id: 5,
+    gambar: Certificate5, // Sesuaikan dengan nama variabel gambar kamu
+    nama: "Certificate of Appreciation: Staff of Research and Technology (Oracle Cabinet)",
+    issuer: "HIMATIKA Universitas Teknologi Yogyakarta",
+    desk: "Awarded for the active contribution and dedication as a Staff of Research and Technology (Ristek) within the Informatics Student Association (HIMATIKA) for the 2024/2025 period under the Oracle Cabinet.",
+    credential: "", 
+    skills: [
+      "Research & Development",
+      "Project Management",
+      "Leadership",
+      "Collaboration"
+    ],
+    dad: "500",
+  },
+
+  // {
+  //   id: 6,
+  //   gambar: Certificate6,
+  //   nama: "JavaScript Programming",
+  //   issuer: "Dicoding Indonesia",
+  //   desk: "Belajar JavaScript modern (ES6+), asynchronous programming, DOM, dan API integration.",
+  //   credential: "https://www.dicoding.com/certificates/XXXXXXXX",
+  //   skills: [
+  //     "JavaScript",
+  //     "ES6",
+  //     "Frontend",
+  //   ],
+  //   dad: "600",
+  // },
+];
