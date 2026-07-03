@@ -26,6 +26,25 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Lock body scroll while the fullscreen mobile overlay is open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  // Close overlay on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const closeMobileMenu = () => setMobileOpen(false);
+
   return (
     <>
       <nav
@@ -108,7 +127,9 @@ const Navbar = () => {
 
             {/* Mobile Button */}
             <button
-              onClick={() => setMobileOpen(!mobileOpen)}
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={mobileOpen}
               className="md:hidden p-2 rounded-lg hover:bg-white/10 transition"
             >
               <svg
@@ -118,77 +139,136 @@ const Navbar = () => {
                 strokeWidth="2"
                 viewBox="0 0 24 24"
               >
-                {mobileOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Fullscreen Overlay Menu */}
+      {mobileOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation menu"
+          className="
+            fixed inset-0 z-[60] md:hidden
+            flex h-[100dvh] flex-col
+            bg-slate-950/90 backdrop-blur-2xl
+            animate-[overlayFadeIn_0.4s_ease_forwards]
+          "
+        >
+          {/* Ambient background glows to match theme */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-[var(--accent-teal)]/10 blur-[100px]" />
+            <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-[var(--accent-purple)]/10 blur-[100px]" />
+          </div>
+
+          {/* Scrollable container so nothing ever gets cut off */}
+          <div className="relative flex h-full flex-col overflow-y-auto">
+            {/* Top bar: logo + close */}
+            <div className="flex shrink-0 items-center justify-between px-6 pt-6">
+              <a
+                href="#home"
+                onClick={closeMobileMenu}
+                className="text-2xl font-extrabold tracking-tight"
+              >
+                <span className="text-gradient">Ricep</span>
+                <span className="text-white">.dev</span>
+              </a>
+
+              <button
+                onClick={closeMobileMenu}
+                aria-label="Close menu"
+                className="
+                  flex h-10 w-10 items-center justify-center
+                  rounded-full border border-white/10 bg-white/5
+                  text-white transition-all duration-300
+                  hover:border-red-400/40 hover:bg-white/10 hover:text-red-300
+                "
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     d="M6 18L18 6M6 6l12 12"
                   />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
-            </button>
-          </div>
-        </div>
+                </svg>
+              </button>
+            </div>
 
-        {/* Mobile Menu */}
-        <div
-          className={`
-            md:hidden
-            overflow-hidden
-            transition-all
-            duration-500
-            ${
-              mobileOpen
-                ? "max-h-96 opacity-100 mt-4"
-                : "max-h-0 opacity-0"
-            }
-          `}
-        >
-          <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-5">
-            <div className="flex flex-col gap-2">
-              {navItems.map((item) => (
+            {/* Navigation links */}
+            <nav className="flex flex-1 flex-col justify-center gap-2 px-6 py-10">
+              {navItems.map((item, index) => (
                 <a
                   key={item.name}
                   href={item.href}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={closeMobileMenu}
+                  style={{ animationDelay: `${100 + index * 70}ms` }}
                   className="
-                    rounded-xl
-                    px-4
-                    py-3
-                    text-[var(--text-secondary)]
-                    hover:bg-white/10
-                    hover:text-white
-                    transition
+                    group flex items-center justify-between
+                    rounded-2xl px-5 py-4
+                    text-2xl font-semibold text-[var(--text-secondary)]
+                    opacity-0
+                    transition-all duration-300
+                    hover:bg-white/10 hover:text-white
+                    active:bg-white/15 active:scale-[0.98]
+                    animate-[overlayItemIn_0.5s_ease_forwards]
                   "
                 >
-                  {item.name}
+                  <span>{item.name}</span>
+                  <span
+                    className="
+                      text-[var(--accent-teal)]
+                      opacity-0 -translate-x-2
+                      transition-all duration-300
+                      group-hover:opacity-100 group-hover:translate-x-0
+                    "
+                  >
+                    &rarr;
+                  </span>
                 </a>
               ))}
+            </nav>
 
+            {/* Contact Me button — always visible, never cut off */}
+            <div
+              className="shrink-0 px-6 pb-8 pt-2 opacity-0 animate-[overlayItemIn_0.5s_ease_forwards]"
+              style={{ animationDelay: `${100 + navItems.length * 70}ms` }}
+            >
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setMobileOpen(false)}
+                onClick={closeMobileMenu}
                 className="
-                  mt-3
-                  rounded-xl
+                  flex w-full items-center justify-center
+                  rounded-full
                   bg-gradient-to-r
                   from-[var(--accent-teal)]
                   to-[var(--accent-purple)]
-                  px-4
-                  py-3
+                  px-6
+                  py-4
                   text-center
+                  text-base
                   font-semibold
                   text-white
-                  transition
-                  hover:opacity-90
+                  shadow-lg shadow-[var(--accent-purple)]/20
+                  transition-all
+                  duration-300
+                  hover:scale-[1.02]
+                  active:scale-[0.98]
                 "
               >
                 Contact Me
@@ -196,7 +276,19 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-      </nav>
+      )}
+
+      {/* Keyframes for overlay animations */}
+      <style>{`
+        @keyframes overlayFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes overlayItemIn {
+          from { opacity: 0; transform: translateY(-16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </>
   );
 };
