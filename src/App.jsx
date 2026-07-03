@@ -6,6 +6,7 @@ import TechStack from "./components/TechStack";
 import Projects from "./components/Projects";
 import Footer from "./components/Footer";
 import Certifications from "./components/Certifications";
+import Publications from "./components/Publication";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <TechStack />
         <Projects />
         <Certifications />
+        <Publications />
       </main>
       <Footer />
     </div>

@@ -6,6 +6,7 @@ const navItems = [
   { name: "Skills", href: "#skills" },
   { name: "Projects", href: "#projects" },
   { name: "Certifications", href: "#certifications" },
+  { name: "Publications", href: "#publications" },
 ];
 
 const whatsappUrl =

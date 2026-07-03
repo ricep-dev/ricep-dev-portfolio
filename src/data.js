@@ -261,3 +261,49 @@ export const listCertifications = [
   //   dad: "600",
   // },
 ];
+
+
+// ================= PUBLICATIONS =================
+
+import Publication1 from "/assets/publications/jsret1.png";
+// import Publication2 from "/assets/publications/nama-file-cover-2.jpg";
+
+export const listPublications = [
+  {
+    id: 1,
+    gambar: Publication1,
+    judul: "Restaurant Menu Recommendation System Using Hybrid Filtering",
+    jurnal: "Journal of Scientific Research Education and Technology",
+    publisher: "Journal of Scientific Research Education and Technology",
+    volume: "Vol 4 No 4",
+    tahun: 2025,
+    doi: "https://jsret.knpub.com/index.php/jrest/article/view/966",
+    authors: ["Ricep Ardiansyah", "Rr. Hajar Puji Sejati"],
+    abstract:
+      "This study presents a restaurant menu recommendation system built on a hybrid filtering approach that combines collaborative and content-based techniques to improve suggestion relevance. The system is implemented using a Flutter-based mobile client and a Golang backend service, enabling real-time interaction between users and the recommendation engine. User preference data, menu attributes, and historical interaction patterns are processed to generate personalized recommendations that adapt as user behavior evolves. Evaluation results indicate that the hybrid model outperforms single-method filtering approaches in terms of accuracy and user satisfaction. The findings demonstrate the practicality of combining artificial intelligence techniques with modern mobile and backend architectures to solve real-world recommendation problems in the food service industry, offering a scalable foundation for future development of intelligent recommendation platforms.",
+    keywords: [
+      "Hybrid Filtering",
+      "Recommendation System",
+      "Multi-Platform Architecture",
+      "Black Box Testing",
+    ],
+    pdf: "https://jsret.knpub.com/index.php/jrest/article/view/966/712",
+    dad: "100",
+  },
+
+  // {
+  //   id: 2,
+  //   gambar: Publication2,
+  //   judul: "",
+  //   jurnal: "",
+  //   publisher: "",
+  //   volume: "",
+  //   tahun: 2025,
+  //   doi: "",
+  //   authors: [""],
+  //   abstract: "",
+  //   keywords: [""],
+  //   pdf: "",
+  //   dad: "200",
+  // },
+];
