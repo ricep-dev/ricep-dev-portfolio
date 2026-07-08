@@ -1,4 +1,4 @@
-import HeroImage from "/assets/Ricep.jpg";
+import HeroImage from "/assets/FotoSaya.jpeg";
 
 const Image = {
   HeroImage,
