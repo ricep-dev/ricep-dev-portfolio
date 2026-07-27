@@ -63,7 +63,7 @@ const Hero = () => {
 
             {/* View CV */}
             <a
-              href="https://drive.google.com/file/d/172uojvOvSwyHaouvJObOBdeA26ycQvcU/view?usp=sharing"
+              href="https://drive.google.com/file/d/1EzU2Ha3xd2hg7Y96uvTOOerm8l1Kj3MW/view?usp=sharing"
               target="_blank"
               rel="noopener noreferrer"
               className="
