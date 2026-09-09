@@ -164,7 +164,7 @@ import Certificate2 from "/assets/certifications/aplikasi dan usecase.jpg";
 import Certificate3 from "/assets/certifications/ml sertif.jpg";
 import Certificate4 from "/assets/certifications/Himatika1.jpg";
 import Certificate5 from "/assets/certifications/Himatika2.jpg";
-// import Certificate6 from "/assets/certifications/javascript.jpg";
+import Certificate6 from "/assets/certifications/TOEFL.jpg";
 
 export const listCertifications = [
 {
@@ -246,20 +246,21 @@ export const listCertifications = [
     dad: "500",
   },
 
-  // {
-  //   id: 6,
-  //   gambar: Certificate6,
-  //   nama: "JavaScript Programming",
-  //   issuer: "Dicoding Indonesia",
-  //   desk: "Belajar JavaScript modern (ES6+), asynchronous programming, DOM, dan API integration.",
-  //   credential: "https://www.dicoding.com/certificates/XXXXXXXX",
-  //   skills: [
-  //     "JavaScript",
-  //     "ES6",
-  //     "Frontend",
-  //   ],
-  //   dad: "600",
-  // },
+  {
+    id: 6,
+    gambar: Certificate6, // Sesuaikan dengan nama variabel gambar kamu
+    nama: "TOEFL Certificate",
+    issuer: "Universitas Teknologi Yogyakarta",
+    desk: "This certificate verifies that the holder has successfully completed the Test of English as a Foreign Language (TOEFL) and has demonstrated proficiency in English language skills, including reading, listening, speaking, and writing.",
+    credential: "",
+    skills: [
+      "English Proficiency",
+      "Reading Comprehension",
+      "Listening Skills",
+      "Writing Skills"
+    ],
+    dad: "600",
+  },
 ];
 
 
