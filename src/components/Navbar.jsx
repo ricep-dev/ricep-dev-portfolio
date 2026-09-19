@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 const navItems = [
   { name: "Home", href: "#home" },
@@ -14,168 +14,304 @@ const whatsappUrl =
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeHash, setActiveHash] = useState("#home");
+  const [hoverIndex, setHoverIndex] = useState(null);
+  const [pill, setPill] = useState({ left: 0, width: 0, visible: false });
 
+  const listRef = useRef(null);
+  const linkRefs = useRef([]);
+  const barRef = useRef(null);
+  const lastY = useRef(0);
+
+  /* ---------------------------------------------------------------
+   * Scroll: progress, state "scrolled", dan auto-hide saat scroll turun
+   * ------------------------------------------------------------- */
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
+    lastY.current = window.scrollY;
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const y = window.scrollY;
+      const max =
+        document.documentElement.scrollHeight - window.innerHeight || 1;
+
+      setProgress(Math.min(Math.max(y / max, 0), 1));
+      setIsScrolled(y > 24);
+
+      const delta = y - lastY.current;
+      if (Math.abs(delta) > 8) {
+        setIsHidden(delta > 0 && y > 240);
+        lastY.current = y;
+      }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Lock body scroll while the fullscreen mobile overlay is open
+  // Navbar tidak boleh ngumpet saat menu mobile terbuka
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    if (mobileOpen) setIsHidden(false);
+  }, [mobileOpen]);
+
+  /* ---------------------------------------------------------------
+   * Scrollspy: menandai section yang sedang dibaca
+   * ------------------------------------------------------------- */
+  useEffect(() => {
+    const sections = navItems
+      .map((item) => document.querySelector(item.href))
+      .filter(Boolean);
+
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const winner = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (winner?.target?.id) setActiveHash(`#${winner.target.id}`);
+      },
+      {
+        rootMargin: "-45% 0px -50% 0px",
+        threshold: [0, 0.2, 0.5, 0.9],
+      }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
+  /* ---------------------------------------------------------------
+   * Indikator geser: mengukur posisi link aktif / yang sedang di-hover
+   * ------------------------------------------------------------- */
+  const measurePill = useCallback(() => {
+    const activeIndex = navItems.findIndex((item) => item.href === activeHash);
+    const index = hoverIndex !== null ? hoverIndex : activeIndex;
+    const link = linkRefs.current[index];
+    const list = listRef.current;
+
+    if (!link || !list) {
+      setPill((prev) => ({ ...prev, visible: false }));
+      return;
+    }
+
+    const linkBox = link.getBoundingClientRect();
+    const listBox = list.getBoundingClientRect();
+
+    setPill({
+      left: linkBox.left - listBox.left,
+      width: linkBox.width,
+      visible: true,
+    });
+  }, [activeHash, hoverIndex]);
+
+  useEffect(() => {
+    measurePill();
+    // ukur ulang setelah webfont selesai dimuat agar posisi tidak meleset
+    const timer = setTimeout(measurePill, 250);
+    window.addEventListener("resize", measurePill);
     return () => {
-      document.body.style.overflow = "";
+      clearTimeout(timer);
+      window.removeEventListener("resize", measurePill);
+    };
+  }, [measurePill]);
+
+  /* ---------------------------------------------------------------
+   * Sorotan halus yang mengikuti kursor di atas bar
+   * ------------------------------------------------------------- */
+  const handlePointerMove = (event) => {
+    const bar = barRef.current;
+    if (!bar) return;
+    const box = bar.getBoundingClientRect();
+    bar.style.setProperty("--mx", `${event.clientX - box.left}px`);
+    bar.style.setProperty("--my", `${event.clientY - box.top}px`);
+    bar.style.setProperty("--sheen", "1");
+  };
+
+  const handlePointerLeave = () => {
+    barRef.current?.style.setProperty("--sheen", "0");
+    setHoverIndex(null);
+  };
+
+  /* ---------------------------------------------------------------
+   * Overlay mobile: kunci scroll + tutup dengan Escape
+   * ------------------------------------------------------------- */
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", onKeyDown);
     };
   }, [mobileOpen]);
 
-  // Close overlay on Escape key
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") setMobileOpen(false);
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
   const closeMobileMenu = () => setMobileOpen(false);
+
+  const handleNavClick = (href) => {
+    setActiveHash(href);
+    setMobileOpen(false);
+  };
 
   return (
     <>
-      <nav
-        className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-500
-        ${
-          isScrolled
-            ? "w-[95%] max-w-6xl"
-            : "w-[96%] max-w-6xl"
-        }`}
+      {/* Garis progres baca, menempel di tepi atas viewport */}
+      <div className="fixed inset-x-0 top-0 z-[70] h-[2px] bg-transparent">
+        <div
+          className="h-full origin-left bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-purple)]"
+          style={{
+            transform: `scaleX(${progress})`,
+            opacity: progress > 0.01 ? 1 : 0,
+            transition: "transform 120ms linear, opacity 300ms ease",
+          }}
+        />
+      </div>
+
+      {/*
+        Centering pakai inset-x-0 + mx-auto, BUKAN left-1/2 + translate.
+        Di Tailwind v4 utility -translate-x-1/2 memakai properti `translate`,
+        yang akan bertumpuk dengan `transform` inline dan menggeser navbar.
+      */}
+      <header
+        className="fixed inset-x-0 top-4 z-50 mx-auto w-[94%] max-w-6xl transition-[transform,opacity] duration-500 ease-out"
+        style={{
+          transform: isHidden ? "translateY(-140%)" : "translateY(0)",
+          opacity: isHidden ? 0 : 1,
+        }}
       >
         <div
-          className="
-            rounded-full
-            border border-white/10
-            bg-white/5
-            backdrop-blur-xl
-            shadow-2xl
-            px-6
-            py-4
-            transition-all
-            duration-500
-          "
+          ref={barRef}
+          onMouseMove={handlePointerMove}
+          onMouseLeave={handlePointerLeave}
+          className={`nav-shell relative overflow-hidden rounded-full border transition-[background-color,border-color,box-shadow,padding] duration-500 ${
+            isScrolled
+              ? "border-white/12 bg-slate-950/70 px-5 py-3 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+              : "border-white/8 bg-white/[0.04] px-6 py-4 backdrop-blur-md"
+          }`}
         >
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-between gap-4">
             {/* Logo */}
             <a
               href="#home"
-              className="text-2xl font-extrabold tracking-tight"
+              onClick={() => handleNavClick("#home")}
+              className="group shrink-0 text-2xl font-extrabold tracking-tight"
             >
               <span className="text-gradient">Ricep</span>
-              <span className="text-white">.dev</span>
+              <span className="text-white/90 transition-colors duration-300 group-hover:text-white">
+                .dev
+              </span>
             </a>
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center gap-2">
-              {navItems.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="
-                    px-5
-                    py-2
-                    rounded-full
-                    text-sm
-                    text-[var(--text-secondary)]
-                    hover:text-white
-                    hover:bg-white/10
-                    transition-all
-                    duration-300
-                  "
-                >
-                  {item.name}
-                </a>
-              ))}
+            {/* Menu desktop */}
+            <div
+              ref={listRef}
+              className="relative hidden items-center md:flex"
+              onMouseLeave={() => setHoverIndex(null)}
+            >
+              {/* Indikator yang meluncur mengikuti link aktif */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-1 rounded-full border border-white/10 bg-white/10"
+                style={{
+                  left: pill.left,
+                  width: pill.width,
+                  opacity: pill.visible ? 1 : 0,
+                  transition:
+                    "left 420ms cubic-bezier(0.22, 1, 0.36, 1), width 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 250ms ease",
+                }}
+              />
 
+              {navItems.map((item, index) => {
+                const isActive = item.href === activeHash;
+                return (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    ref={(el) => (linkRefs.current[index] = el)}
+                    onMouseEnter={() => setHoverIndex(index)}
+                    onFocus={() => setHoverIndex(index)}
+                    onBlur={() => setHoverIndex(null)}
+                    onClick={() => handleNavClick(item.href)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`relative z-10 rounded-full px-4 py-2 text-sm transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-teal)]/60 ${
+                      isActive
+                        ? "font-medium text-white"
+                        : "text-[var(--text-secondary)] hover:text-white"
+                    }`}
+                  >
+                    {item.name}
+                  </a>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-2">
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="
-                  ml-3
-                  rounded-full
-                  bg-gradient-to-r
-                  from-[var(--accent-teal)]
-                  to-[var(--accent-purple)]
-                  px-6
-                  py-2.5
-                  text-sm
-                  font-semibold
-                  text-white
-                  shadow-lg
-                  hover:scale-105
-                  transition-all
-                  duration-300
-                "
+                className="cta-glow relative hidden overflow-hidden rounded-full bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-purple)] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[var(--accent-purple)]/20 transition-transform duration-300 hover:-translate-y-0.5 active:translate-y-0 md:inline-flex"
               >
-                Contact Me
+                <span className="relative z-10">Hubungi saya</span>
               </a>
-            </div>
 
-            {/* Mobile Button */}
-            <button
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open menu"
-              aria-expanded={mobileOpen}
-              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition"
-            >
-              <svg
-                className="w-7 h-7 text-white"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
+              {/* Tombol menu mobile */}
+              <button
+                type="button"
+                onClick={() => setMobileOpen(true)}
+                aria-label="Buka menu"
+                aria-expanded={mobileOpen}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-colors duration-300 hover:bg-white/10 md:hidden"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+                <span className="flex flex-col items-end gap-[5px]">
+                  <span className="block h-[2px] w-5 rounded-full bg-white" />
+                  <span className="block h-[2px] w-3.5 rounded-full bg-white/70" />
+                  <span className="block h-[2px] w-5 rounded-full bg-white" />
+                </span>
+              </button>
+            </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* Mobile Fullscreen Overlay Menu */}
+      {/* Overlay menu mobile */}
       {mobileOpen && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Mobile navigation menu"
-          className="
-            fixed inset-0 z-[60] md:hidden
-            flex h-[100dvh] flex-col
-            bg-slate-950/90 backdrop-blur-2xl
-            animate-[overlayFadeIn_0.4s_ease_forwards]
-          "
+          aria-label="Menu navigasi"
+          className="fixed inset-0 z-[60] flex h-[100dvh] flex-col bg-slate-950/92 backdrop-blur-2xl overlay-in md:hidden"
         >
-          {/* Ambient background glows to match theme */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-[var(--accent-teal)]/10 blur-[100px]" />
-            <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-[var(--accent-purple)]/10 blur-[100px]" />
+            <div className="absolute -left-16 -top-24 h-72 w-72 rounded-full bg-[var(--accent-teal)]/10 blur-[110px]" />
+            <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-[var(--accent-purple)]/10 blur-[110px]" />
           </div>
 
-          {/* Scrollable container so nothing ever gets cut off */}
           <div className="relative flex h-full flex-col overflow-y-auto">
-            {/* Top bar: logo + close */}
             <div className="flex shrink-0 items-center justify-between px-6 pt-6">
               <a
                 href="#home"
-                onClick={closeMobileMenu}
+                onClick={() => handleNavClick("#home")}
                 className="text-2xl font-extrabold tracking-tight"
               >
                 <span className="text-gradient">Ricep</span>
@@ -183,21 +319,18 @@ const Navbar = () => {
               </a>
 
               <button
+                type="button"
                 onClick={closeMobileMenu}
-                aria-label="Close menu"
-                className="
-                  flex h-10 w-10 items-center justify-center
-                  rounded-full border border-white/10 bg-white/5
-                  text-white transition-all duration-300
-                  hover:border-red-400/40 hover:bg-white/10 hover:text-red-300
-                "
+                aria-label="Tutup menu"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-colors duration-300 hover:bg-white/10"
               >
                 <svg
                   className="h-5 w-5"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="1.8"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -208,85 +341,117 @@ const Navbar = () => {
               </button>
             </div>
 
-            {/* Navigation links */}
-            <nav className="flex flex-1 flex-col justify-center gap-2 px-6 py-10">
-              {navItems.map((item, index) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  onClick={closeMobileMenu}
-                  style={{ animationDelay: `${100 + index * 70}ms` }}
-                  className="
-                    group flex items-center justify-between
-                    rounded-2xl px-5 py-4
-                    text-2xl font-semibold text-[var(--text-secondary)]
-                    opacity-0
-                    transition-all duration-300
-                    hover:bg-white/10 hover:text-white
-                    active:bg-white/15 active:scale-[0.98]
-                    animate-[overlayItemIn_0.5s_ease_forwards]
-                  "
-                >
-                  <span>{item.name}</span>
-                  <span
-                    className="
-                      text-[var(--accent-teal)]
-                      opacity-0 -translate-x-2
-                      transition-all duration-300
-                      group-hover:opacity-100 group-hover:translate-x-0
-                    "
+            <nav className="flex flex-1 flex-col justify-center gap-1 px-6 py-10">
+              {navItems.map((item, index) => {
+                const isActive = item.href === activeHash;
+                return (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => handleNavClick(item.href)}
+                    aria-current={isActive ? "page" : undefined}
+                    style={{ animationDelay: `${80 + index * 60}ms` }}
+                    className={`overlay-item flex items-center gap-4 rounded-2xl px-4 py-4 text-3xl font-semibold tracking-tight transition-colors duration-300 active:bg-white/10 ${
+                      isActive ? "text-white" : "text-[var(--text-secondary)]"
+                    }`}
                   >
-                    &rarr;
-                  </span>
-                </a>
-              ))}
+                    <span
+                      className={`h-6 w-[3px] rounded-full transition-all duration-300 ${
+                        isActive
+                          ? "bg-gradient-to-b from-[var(--accent-teal)] to-[var(--accent-purple)]"
+                          : "bg-white/10"
+                      }`}
+                    />
+                    {item.name}
+                  </a>
+                );
+              })}
             </nav>
 
-            {/* Contact Me button — always visible, never cut off */}
             <div
-              className="shrink-0 px-6 pb-8 pt-2 opacity-0 animate-[overlayItemIn_0.5s_ease_forwards]"
-              style={{ animationDelay: `${100 + navItems.length * 70}ms` }}
+              className="overlay-item shrink-0 px-6 pb-10 pt-2"
+              style={{ animationDelay: `${80 + navItems.length * 60}ms` }}
             >
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={closeMobileMenu}
-                className="
-                  flex w-full items-center justify-center
-                  rounded-full
-                  bg-gradient-to-r
-                  from-[var(--accent-teal)]
-                  to-[var(--accent-purple)]
-                  px-6
-                  py-4
-                  text-center
-                  text-base
-                  font-semibold
-                  text-white
-                  shadow-lg shadow-[var(--accent-purple)]/20
-                  transition-all
-                  duration-300
-                  hover:scale-[1.02]
-                  active:scale-[0.98]
-                "
+                className="flex w-full items-center justify-center rounded-full bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-purple)] px-6 py-4 text-base font-semibold text-white shadow-lg shadow-[var(--accent-purple)]/20 transition-transform duration-300 active:scale-[0.98]"
               >
-                Contact Me
+                Hubungi saya
               </a>
+              <p className="mt-4 text-center text-sm text-[var(--text-secondary)]">
+                Balasan biasanya dalam 1×24 jam lewat WhatsApp.
+              </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Keyframes for overlay animations */}
       <style>{`
-        @keyframes overlayFadeIn {
+        /* Sorotan lembut yang mengikuti kursor di atas bar */
+        .nav-shell::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          opacity: var(--sheen, 0);
+          background: radial-gradient(
+            180px circle at var(--mx, 50%) var(--my, 50%),
+            rgba(255, 255, 255, 0.10),
+            transparent 65%
+          );
+          transition: opacity 400ms ease;
+          pointer-events: none;
+        }
+
+        /* Kilau yang lewat sekali saat tombol di-hover */
+        .cta-glow::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 45%;
+          left: -60%;
+          background: linear-gradient(
+            100deg,
+            transparent,
+            rgba(255, 255, 255, 0.35),
+            transparent
+          );
+          transform: skewX(-18deg);
+        }
+        .cta-glow:hover::after {
+          animation: navSheen 750ms ease-out;
+        }
+        @keyframes navSheen {
+          to { left: 120%; }
+        }
+
+        .overlay-in {
+          animation: navOverlayIn 260ms ease-out both;
+        }
+        @keyframes navOverlayIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        @keyframes overlayItemIn {
-          from { opacity: 0; transform: translateY(-16px); }
+
+        .overlay-item {
+          opacity: 0;
+          animation: navItemIn 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes navItemIn {
+          from { opacity: 0; transform: translateY(14px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .overlay-in,
+          .overlay-item,
+          .cta-glow:hover::after {
+            animation: none !important;
+          }
+          .overlay-item { opacity: 1; }
         }
       `}</style>
     </>

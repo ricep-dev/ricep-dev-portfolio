@@ -13,7 +13,7 @@ const Footer = () => {
               <span className="text-gradient">Ricep</span>.dev
             </h2>
             <p className="text-[var(--text-secondary)] mt-2">
-              Building Mobile & Web Applications
+              Software Engineer, Web & Mobile Developer
             </p>
           </div>
 

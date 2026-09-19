@@ -176,11 +176,11 @@ const About = () => {
   const [statsRef, statsInView] = useInView({ threshold: 0.2 });
 
   const bulletItems = [
-    { icon: "🚀", text: "I'm currently building modern Mobile & Web Applications." },
-    { icon: "🌱", text: "Currently learning System Design & Scalable Architecture." },
-    { icon: "🎯", text: "Specialized in React, Next.js, Golang & Flutter." },
-    { icon: "💡", text: "Passionate about Backend Engineering & AI Recommendation Systems." },
-    { icon: "⚡", text: "I enjoy solving real-world business problems through software." },
+    { icon: "🚀", text: "Fokus membangun aplikasi Web & Mobile."},
+    { icon: "🌱", text: "Berfokus pada Software Engineering & Full-Stack Development." },
+    { icon: "🎯", text: "Berpengalaman menggunakan React.js, Flutter, Golang & Node.js."},
+    { icon: "💡", text: "Tertarik pada Backend Engineering & AI Recommendation Systems."},
+    { icon: "⚡", text: "Senang mengubah kebutuhan bisnis menjadi solusi berbasis teknologi." },
   ];
 
   const techStack = ["React", "Next.js", "Flutter", "Golang", "TypeScript", "Node.js", "PostgreSQL",];
@@ -436,7 +436,7 @@ const About = () => {
           <div className="card-glass about-card-left p-6 sm:p-8 h-full">
             <h3 className="text-2xl font-semibold mb-6 text-white flex items-center gap-3">
               <span className="text-3xl">👨‍💻</span>
-              A little about myself
+              Sedikit Tentang Saya
             </h3>
 
             <ul ref={listRef} className="space-y-5 text-lg text-[var(--text-secondary)]">

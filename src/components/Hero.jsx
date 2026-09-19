@@ -21,13 +21,14 @@ const Hero = () => {
           </h1>
 
           <h2 className="text-2xl md:text-3xl text-gray-300 font-semibold">
-            Building Mobile & Web Applications
+            Software Engineer | Web & Mobile Developer
           </h2>
 
           <p className="text-[var(--text-secondary)] text-lg max-w-2xl mx-auto lg:mx-0">
-            A passionate developer specializing in React, Golang, and Flutter.
-            Passionate about building scalable web & mobile applications with a
-            strong interest in AI Recommendation Systems and Backend Engineering.
+            Saya berfokus pada pengembangan aplikasi web dan mobile, khususnya Full-Stack Development dan
+            Software Engineering. Berpengalaman mengembangkan berbagai project menggunakan React.js, Flutter,
+            Golang, Node.js, REST API, dan MySQL, serta terbiasa membangun sistem dari frontend hingga backend
+            dan database.
           </p>
 
           {/* ================= Buttons ================= */}

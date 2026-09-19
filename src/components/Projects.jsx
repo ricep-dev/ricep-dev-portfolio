@@ -1,246 +1,441 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listProyek } from "../data";
 
 const Projects = () => {
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [activeTool, setActiveTool] = useState("Semua");
+  const [selectedId, setSelectedId] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Close modal on Escape key
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === "Escape") setSelectedProject(null);
+  const closeButtonRef = useRef(null);
+  const lastFocused = useRef(null);
+
+  /* ---------------------------------------------------------------
+   * Filter berdasarkan teknologi yang dipakai di lebih dari satu proyek
+   * ------------------------------------------------------------- */
+  const toolFilters = useMemo(() => {
+    const count = new Map();
+    listProyek.forEach((project) => {
+      (project.tools || []).forEach((tool) => {
+        count.set(tool, (count.get(tool) || 0) + 1);
+      });
+    });
+
+    const shared = [...count.entries()]
+      .filter(([, total]) => total > 1)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 6)
+      .map(([tool]) => tool);
+
+    return ["Semua", ...shared];
   }, []);
 
-  useEffect(() => {
-    if (selectedProject) {
-      document.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden";
-      setImageLoaded(false);
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [selectedProject, handleKeyDown]);
+  const visibleProjects = useMemo(() => {
+    if (activeTool === "Semua") return listProyek;
+    return listProyek.filter((project) =>
+      (project.tools || []).includes(activeTool)
+    );
+  }, [activeTool]);
 
+  const selectedIndex = visibleProjects.findIndex((p) => p.id === selectedId);
+  const selectedProject = selectedIndex >= 0 ? visibleProjects[selectedIndex] : null;
+
+  /* ---------------------------------------------------------------
+   * Lightbox
+   * ------------------------------------------------------------- */
   const openModal = (project) => {
-    setSelectedProject(project);
-  };
-
-  const closeModal = () => {
-    setSelectedProject(null);
-  };
-
-  // Navigate between projects inside modal
-  const navigate = (direction) => {
-    const currentIndex = listProyek.findIndex((p) => p.id === selectedProject.id);
-    const nextIndex = (currentIndex + direction + listProyek.length) % listProyek.length;
-    setSelectedProject(listProyek[nextIndex]);
+    lastFocused.current = document.activeElement;
     setImageLoaded(false);
+    setSelectedId(project.id);
   };
+
+  const closeModal = useCallback(() => {
+    setSelectedId(null);
+  }, []);
+
+  const goTo = useCallback(
+    (step) => {
+      if (selectedIndex < 0 || visibleProjects.length < 2) return;
+      const next =
+        (selectedIndex + step + visibleProjects.length) % visibleProjects.length;
+      setImageLoaded(false);
+      setSelectedId(visibleProjects[next].id);
+    },
+    [selectedIndex, visibleProjects]
+  );
+
+  useEffect(() => {
+    if (!selectedProject) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") closeModal();
+      if (event.key === "ArrowRight") goTo(1);
+      if (event.key === "ArrowLeft") goTo(-1);
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    closeButtonRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [selectedProject, closeModal, goTo]);
+
+  // Kembalikan fokus ke kartu yang tadi diklik setelah lightbox ditutup
+  useEffect(() => {
+    if (!selectedId && lastFocused.current) {
+      lastFocused.current.focus?.();
+      lastFocused.current = null;
+    }
+  }, [selectedId]);
+
+  // Muat gambar tetangga lebih dulu supaya perpindahan terasa instan
+  useEffect(() => {
+    if (selectedIndex < 0) return;
+    [-1, 1].forEach((step) => {
+      const neighbour =
+        visibleProjects[
+          (selectedIndex + step + visibleProjects.length) % visibleProjects.length
+        ];
+      if (neighbour?.gambar) {
+        const img = new Image();
+        img.src = neighbour.gambar;
+      }
+    });
+  }, [selectedIndex, visibleProjects]);
 
   return (
     <>
       <section id="projects" className="py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+        <div className="mb-14 text-center">
+          <h2 className="mb-4 text-4xl font-bold md:text-5xl">
             <span className="text-gradient">My Projects</span>
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-purple)] mx-auto rounded-full mb-8"></div>
-          <p className="text-[var(--text-secondary)] text-lg max-w-2xl mx-auto">
-            Berikut adalah beberapa contoh karya terbaru saya di bidang pengembangan web dan aplikasi mobile.
+          <div className="mx-auto mb-8 h-1 w-24 rounded-full bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-purple)]" />
+          <p className="mx-auto max-w-2xl text-lg text-[var(--text-secondary)]">
+            Berikut adalah beberapa contoh karya terbaru saya di bidang
+            pengembangan web dan aplikasi mobile.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {listProyek.map((project) => (
-            <div
-              key={project.id}
-              onClick={() => openModal(project)}
-              className="group card-glass overflow-hidden flex flex-col hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(139,92,246,0.2)] transition-all duration-300 cursor-pointer"
-            >
-              {/* Project Image */}
-              <div className="relative w-full h-48 overflow-hidden bg-[var(--bg-darker)]">
-                <img
-                  src={project.gambar}
-                  alt={project.nama}
-                  className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-darker)] to-transparent opacity-80"></div>
+        {/* Filter teknologi */}
+        {toolFilters.length > 1 && (
+          <div className="mb-10 flex flex-wrap items-center justify-center gap-2">
+            {toolFilters.map((tool) => {
+              const isActive = tool === activeTool;
+              return (
+                <button
+                  key={tool}
+                  type="button"
+                  onClick={() => setActiveTool(tool)}
+                  aria-pressed={isActive}
+                  className={`rounded-full border px-4 py-2 text-sm transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-teal)]/60 ${
+                    isActive
+                      ? "border-[var(--accent-teal)]/40 bg-[var(--accent-teal)]/10 text-white"
+                      : "border-white/10 bg-white/[0.03] text-[var(--text-secondary)] hover:border-white/20 hover:text-white"
+                  }`}
+                >
+                  {tool}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-                {/* Hover overlay hint */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 border border-white/10">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {visibleProjects.map((project) => {
+            const tools = project.tools || [];
+            const shownTools = tools.slice(0, 3);
+            const hiddenCount = tools.length - shownTools.length;
+
+            return (
+              <article
+                key={project.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => openModal(project)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openModal(project);
+                  }
+                }}
+                aria-label={`Lihat detail proyek ${project.nama}`}
+                className="project-card group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1.5 hover:border-[var(--accent-teal)]/30 hover:shadow-[0_24px_50px_-30px_rgba(0,0,0,0.9)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-teal)]/60"
+              >
+                {/* Gambar */}
+                <div className="relative aspect-[16/10] overflow-hidden bg-[var(--bg-darker)]">
+                  <img
+                    src={project.gambar}
+                    alt={project.nama}
+                    loading="lazy"
+                    className="h-full w-full object-cover object-top transition-transform duration-[900ms] ease-out group-hover:scale-[1.06]"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[var(--bg-darker)] via-[var(--bg-darker)]/50 to-transparent" />
+
+                  {/* Petunjuk buka lightbox */}
+                  <div className="absolute right-3 top-3 flex h-9 w-9 translate-y-1 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="w-4 h-4 text-[var(--accent-teal)]"
+                      className="h-4 w-4"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
-                      strokeWidth={2}
+                      strokeWidth={1.8}
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0zm0 0v.01"
+                        d="M4 9V5a1 1 0 011-1h4M20 9V5a1 1 0 00-1-1h-4M4 15v4a1 1 0 001 1h4M20 15v4a1 1 0 01-1 1h-4"
                       />
                     </svg>
-                    <span className="text-white text-xs font-semibold">Lihat Gambar</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Project Info */}
-              <div className="p-6 flex-1 flex flex-col">
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-[var(--accent-teal)] transition-colors">
-                  {project.nama}
-                </h3>
-                <p className="text-[var(--text-secondary)] mb-6 flex-1 text-sm line-clamp-3">
-                  {project.desk}
-                </p>
+                {/* Info */}
+                <div className="flex flex-1 flex-col p-6 pt-5">
+                  <h3 className="mb-2 text-xl font-bold leading-snug text-white transition-colors duration-300 group-hover:text-[var(--accent-teal)]">
+                    {project.nama}
+                  </h3>
+                  <p className="mb-6 line-clamp-3 flex-1 text-sm leading-relaxed text-[var(--text-secondary)]">
+                    {project.desk}
+                  </p>
 
-                {/* Tech Stack Tags */}
-                <div className="flex flex-wrap gap-2 mt-auto">
-                  {project.tools.map((tool, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 text-xs font-semibold rounded-full bg-white/10 text-[var(--accent-teal)] border border-white/5"
-                    >
-                      {tool}
-                    </span>
-                  ))}
+                  <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-white/[0.07] pt-4">
+                    {shownTools.map((tool) => (
+                      <span
+                        key={tool}
+                        className="rounded-md bg-white/[0.06] px-2.5 py-1 text-xs font-medium text-[var(--accent-teal)]"
+                      >
+                        {tool}
+                      </span>
+                    ))}
+                    {hiddenCount > 0 && (
+                      <span className="text-xs text-[var(--text-secondary)]">
+                        +{hiddenCount} lainnya
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              </article>
+            );
+          })}
         </div>
+
+        {visibleProjects.length === 0 && (
+          <p className="py-16 text-center text-[var(--text-secondary)]">
+            Belum ada proyek dengan teknologi ini. Pilih filter lain untuk
+            melihat karya yang tersedia.
+          </p>
+        )}
       </section>
 
-      {/* ===== IMAGE MODAL ===== */}
+      {/* ===== LIGHTBOX ===== */}
       {selectedProject && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
-          style={{ animation: "fadeIn 0.2s ease" }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={selectedProject.nama}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 modal-fade"
         >
-          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            className="absolute inset-0 bg-black/85 backdrop-blur-md"
             onClick={closeModal}
           />
 
-          {/* Modal Container */}
-          <div
-            className="relative z-10 w-full max-w-5xl max-h-[90vh] flex flex-col rounded-2xl overflow-hidden"
-            style={{
-              background: "var(--bg-darker, #0f1117)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "0 25px 60px rgba(0,0,0,0.7)",
-              animation: "slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-            }}
-          >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-2 h-2 rounded-full bg-[var(--accent-teal)] flex-shrink-0" />
-                <h3 className="text-white font-bold text-base md:text-lg truncate">
+          <div className="modal-panel relative z-10 flex max-h-[90dvh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[var(--bg-darker,#0f1117)] shadow-[0_40px_90px_-30px_rgba(0,0,0,0.95)]">
+            {/* Header */}
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
+              <div className="min-w-0">
+                <h3 className="truncate text-base font-bold text-white md:text-lg">
                   {selectedProject.nama}
                 </h3>
+                <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+                  Proyek {selectedIndex + 1} dari {visibleProjects.length}
+                  {activeTool !== "Semua" && ` · ${activeTool}`}
+                </p>
               </div>
+
               <button
+                ref={closeButtonRef}
+                type="button"
                 onClick={closeModal}
-                className="flex-shrink-0 ml-3 w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors text-[var(--text-secondary)] hover:text-white"
                 aria-label="Tutup"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-[var(--text-secondary)] transition-colors duration-200 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-teal)]/60"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
 
-            {/* Image Area */}
-            <div className="relative flex-1 min-h-0 bg-black/40 flex items-center justify-center overflow-hidden">
-              {/* Prev Button */}
-              <button
-                onClick={(e) => { e.stopPropagation(); navigate(-1); }}
-                className="absolute left-3 z-20 w-10 h-10 rounded-full flex items-center justify-center bg-black/60 hover:bg-[var(--accent-teal)]/80 border border-white/10 text-white transition-all duration-200 hover:scale-110"
-                aria-label="Sebelumnya"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              {/* Image */}
+            {/* Area gambar */}
+            <div className="relative flex min-h-0 flex-1 items-center justify-center bg-black/50 p-4">
               {!imageLoaded && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div
-                    className="w-8 h-8 rounded-full border-2 border-white/20"
-                    style={{
-                      borderTopColor: "var(--accent-teal)",
-                      animation: "spin 0.8s linear infinite",
-                    }}
-                  />
-                </div>
+                <div
+                  className="absolute h-8 w-8 rounded-full border-2 border-white/15"
+                  style={{
+                    borderTopColor: "var(--accent-teal)",
+                    animation: "modalSpin 0.8s linear infinite",
+                  }}
+                />
               )}
+
               <img
                 key={selectedProject.id}
                 src={selectedProject.gambar}
                 alt={selectedProject.nama}
                 onLoad={() => setImageLoaded(true)}
-                className="max-w-full max-h-[55vh] w-auto h-auto object-contain transition-opacity duration-300"
+                className="max-h-[52dvh] w-auto max-w-full rounded-lg object-contain transition-opacity duration-300"
                 style={{ opacity: imageLoaded ? 1 : 0 }}
               />
 
-              {/* Next Button */}
-              <button
-                onClick={(e) => { e.stopPropagation(); navigate(1); }}
-                className="absolute right-3 z-20 w-10 h-10 rounded-full flex items-center justify-center bg-black/60 hover:bg-[var(--accent-teal)]/80 border border-white/10 text-white transition-all duration-200 hover:scale-110"
-                aria-label="Berikutnya"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+              {visibleProjects.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => goTo(-1)}
+                    aria-label="Proyek sebelumnya"
+                    className="absolute left-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/60 text-white backdrop-blur-sm transition-colors duration-200 hover:border-[var(--accent-teal)]/50 hover:bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-teal)]/60"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.8}
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => goTo(1)}
+                    aria-label="Proyek berikutnya"
+                    className="absolute right-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/60 text-white backdrop-blur-sm transition-colors duration-200 hover:border-[var(--accent-teal)]/50 hover:bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-teal)]/60"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.8}
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
 
-            {/* Modal Footer - Project Info */}
-            <div className="px-5 py-4 border-t border-white/10 flex-shrink-0">
-              <p className="text-[var(--text-secondary)] text-sm mb-3 line-clamp-2">
+            {/* Footer: deskripsi, tools, dan strip thumbnail */}
+            <div className="shrink-0 overflow-y-auto border-t border-white/10 px-5 py-4">
+              <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
                 {selectedProject.desk}
               </p>
-              <div className="flex flex-wrap gap-2">
-                {selectedProject.tools.map((tool, index) => (
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(selectedProject.tools || []).map((tool) => (
                   <span
-                    key={index}
-                    className="px-3 py-1 text-xs font-semibold rounded-full bg-white/10 text-[var(--accent-teal)] border border-white/5"
+                    key={tool}
+                    className="rounded-md bg-white/[0.06] px-2.5 py-1 text-xs font-medium text-[var(--accent-teal)]"
                   >
                     {tool}
                   </span>
                 ))}
               </div>
 
-              {/* Project counter */}
-              <p className="text-[var(--text-secondary)] text-xs mt-3 text-right opacity-50">
-                {listProyek.findIndex((p) => p.id === selectedProject.id) + 1} / {listProyek.length}
-              </p>
+              {visibleProjects.length > 1 && (
+                <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+                  {visibleProjects.map((project) => {
+                    const isCurrent = project.id === selectedProject.id;
+                    return (
+                      <button
+                        key={project.id}
+                        type="button"
+                        onClick={() => {
+                          if (isCurrent) return;
+                          setImageLoaded(false);
+                          setSelectedId(project.id);
+                        }}
+                        aria-label={project.nama}
+                        aria-current={isCurrent ? "true" : undefined}
+                        className={`h-12 w-20 shrink-0 overflow-hidden rounded-md border transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-teal)]/60 ${
+                          isCurrent
+                            ? "border-[var(--accent-teal)] opacity-100"
+                            : "border-white/10 opacity-45 hover:opacity-90"
+                        }`}
+                      >
+                        <img
+                          src={project.gambar}
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-cover object-top"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Keyframe styles */}
       <style>{`
-        @keyframes fadeIn {
+        .modal-fade {
+          animation: modalFade 200ms ease both;
+        }
+        @keyframes modalFade {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(24px) scale(0.97); }
+
+        .modal-panel {
+          animation: modalPanel 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes modalPanel {
+          from { opacity: 0; transform: translateY(18px) scale(0.98); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes spin {
+
+        @keyframes modalSpin {
           to { transform: rotate(360deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .modal-fade,
+          .modal-panel { animation: none; }
+          .project-card { transition: none; }
         }
       `}</style>
     </>
