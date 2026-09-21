@@ -7,21 +7,25 @@ import Projects from "./components/Projects";
 import Footer from "./components/Footer";
 import Certifications from "./components/Certifications";
 import Publications from "./components/Publication";
+import CodeBackground from "./components/CodeBackground";
 
 function App() {
   return (
-    <div className="bg-[var(--bg-dark)] min-h-screen font-sans">
-      <Navbar />
-      <main className="container mx-auto px-6 md:px-12 lg:px-24">
-        <Hero />
-        <About />
-        <TechStack />
-        <Projects />
-        <Certifications />
-        <Publications />
-      </main>
-      <Footer />
-    </div>
+    <>
+      <CodeBackground />
+      <div className="relative z-10 min-h-screen font-sans">
+        <Navbar />
+        <main className="container mx-auto px-6 md:px-12 lg:px-24">
+          <Hero />
+          <About />
+          <TechStack />
+          <Projects />
+          <Certifications />
+          <Publications />
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 }
 
